@@ -1,0 +1,24 @@
+AKIAIDIRJPWQ5P4NMSVQ
+
+
+Lyt2UC1M6G1AKnoRsEN2jifWMi958Hx4437E+NEu
+
+
+
+
+provider "aws"
+{
+region = "us-east-2"
+}
+
+resource "aws_instance" "Terra-Instance"
+{
+                ami = "ami-0b500ef59d8335eee"
+                instance_type = "t2.micro"
+                key_name = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDcTXBL8MVlraUbRcRGx5LnayLZxxFCaCLyRtCGU05ekL91k5eIi6bqd9xUmhx6rMuzZbMHl8UgSaKO+Od3LiPg0iWj8cxLTu7dB9sRaztMb573B4k+nXyhh7xA774Mi6+54gd+O1ZfXKSvPbA9bxOK75qVM3UMqUyj0K/qHHXjvuRt7pHj2+/pbvzYHph5icL282Loc7XnIvQq++e/0geJgCXCMvscECYZgBz4Wg5/fCl6SC0KjN439UjAFzvVCXMIkARWkVWv2+aOIkN5+1v+NUrS2Q63MreWGkLfIobKEfoCBbFNXcGoDETc3ry6ReBdD2bII6YrQTrvXG05x/ZT root@ip-172-31-39-168.ap-south-1.compute.internal"
+                tags {
+               
+                Name = "Aws-Terraform"
+             }
+ 
+}

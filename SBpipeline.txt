@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    tools {
+     gradle 'Gradle6.1'
+    }
+    stages {
+        stage('git_checkout') { 
+            steps {
+               git credentialsId: 'MinervaIOT-Key', url: 'ssh://git@192.168.1.11:10022/miverraiot-platform/developer-portal/developerportal.git'
+            }
+        stage('Build') { 
+            steps {
+               sh './gradlew build' 
+            }
+            post {
+               success {
+                    echo 'Now Archiving...'
+                    archiveArtifacts artifacts: '**/target/*.jar'
+                   }
+              } 
+          }
+
+
+    stage('Deliver') {
+        steps {
+             sh 'scp -v -o StrictHostKeyChecking=no  -i /var/lib/jenkins/secrets/mykey target/*.jar ubuntu@00.00.00.00:/home/ubuntu'
+                                                                       home dir                                  dest dir
+             sh "sshpass -p password ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/secrets/mykey ubuntu@00.00.00.00 '/home/ubuntu/start.sh'"
+        }
+    }
+}
+
+
+
+
+
+
+
+node{
+ //try {
+ //notifyBuild('STARTED')
+
+stage("Source-Code-Checkout"){
+
+    //enable remote triggers
+   script {
+       // properties([pipelineTriggers([pollSCM('* * * * *')])])
+       //properties([pipelineTriggers([gitlabPush()])])
+    }
+
+     //git credentialsId: 'Jenkins-Public-Key-Biosecurity', url: 'ssh://git@192.168.1.11:10022/miverraiot-platform/developer-portal/developerportal.git'
+   checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'DisableRemotePoll']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'MinervaIOT-Key', url: 'ssh://git@192.168.1.11:10022/miverraiot-platform/developer-portal/developerportal.git']]])
+       gitlabCommitStatus {
+
+    }
+    
+}
+}

@@ -1,0 +1,162 @@
+pipeline {
+  agent any
+  parameters {
+    gitParameter branchFilter: 'origin/(.*)', defaultValue: 'master', name: 'BRANCH', type: 'PT_BRANCH'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        git branch: "${params.BRANCH}", url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
+      }
+    }
+  }
+}
+Pipeline: Branch type - Basic usage (Scripted Pipeline)
+properties([
+    parameters([
+        gitParameter(branch: '',
+                     branchFilter: 'origin/(.*)',
+                     defaultValue: 'master',
+                     description: '',
+                     name: 'BRANCH',
+                     quickFilterEnabled: false,
+                     selectedValue: 'NONE',
+                     sortMode: 'NONE',
+                     tagFilter: '*',
+                     type: 'PT_BRANCH')
+    ])
+])
+node {
+    git branch: "${params.BRANCH}", url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
+}
+
+
+
+
+
+pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'python:3-alpine'
+                }
+            }
+            steps {
+                sh 'virtualenv venv --distribute'
+                sh 'source venv/bin/activate '
+                sh 'pip install --user -r requirements.txt'
+                sh 'python WebChecker.py'
+            }
+            post {
+                always {
+                    junit 'output.xml'
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'python:3-alpine'
+                }
+            }
+            steps {
+                sh 'pip install --user -r requirements.txt'
+                sh 'python WebChecker.py'
+            }
+            post {
+                always {
+                    junit 'output.xml'
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'python:3-alpine'
+                }
+            }
+            steps {
+                withEnv(["HOME=${env.WORKSPACE}"]) {
+                    sh 'pip install --user -r requirements.txt'
+                    sh 'python WebChecker.py'
+                }
+            }
+            post {
+                always {
+                    junit 'output.xml'
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+stage('Build') {
+    agent {
+        docker {
+            image 'python:3.7.5'
+        }
+    }
+}
+stage('Test') {
+        agent {
+            docker {
+                image 'qnib/pytest'
+            }
+        }
+}
+stage('Deliver') {
+            agent any
+            environment {
+                VOLUME = '$(pwd)/sources:/src'
+                IMAGE = 'cdrx/pyinstaller-linux:python2'
+            }
+            steps {
+                dir(path: env.BUILD_ID) {
+                    unstash(name: 'compiled-results')
+                    sh "docker run --rm -v ${VOLUME} ${IMAGE} 'pyinstaller -F add2vals.py'"
+                }
+            }
+            post {
+                success {
+                    archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
+                    sh "docker run --rm -v ${VOLUME} ${IMAGE} 'rm -rf build dist'"
+                }
+            }
+        }

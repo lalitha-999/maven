@@ -1,0 +1,59 @@
+sh 'gradle wrapper'
+sh 'LOGGING_LEVEL_ROOT=INFO ./gradlew clean build -x test --info'
+
+
+
+stage('Build Debian Package') {
+            steps {
+                sh "LOGGING_LEVEL_ROOT=INFO ./gradlew packDeb --info"
+            }
+        }
+
+
+
+
+pipeline {
+    agent any
+
+    tools {
+     gradle 'gradle6.4.1'
+    }
+    stages {
+        stage('git_checkout') { 
+            steps {
+               git credentialsId: 'MinervaIOT-Key', url: 'ssh://git@192.168.1.11:10022/miverraiot-platform/developer-portal/developerportal.git'
+            }
+        }
+        stage('Build') { 
+            steps {
+                
+               sh "chmod +x gradlew"
+               //sh 'gradle jar'
+               //sh './gradlew build'
+               //sh 'gradle build -x test'
+               //sh 'gradle wrapper'
+               //sh 'LOGGING_LEVEL_ROOT=INFO ./gradlew clean build -x test --info'
+
+               //sh './gradlew bootRepackage'
+               sh './gradlew assemble'
+               
+            }
+        }
+    }
+}
+
+
+gradlew clean --warning-mode=all -- stacktrace
+
+gradlew build --warning-mode=all
+
+
+
+//sh 'gradle jar'
+               //sh './gradlew build'
+               //sh 'gradle build -x test'
+               //sh 'gradle wrapper'
+               //sh 'LOGGING_LEVEL_ROOT=INFO ./gradlew clean build -x test --info'
+
+               //sh './gradlew bootRepackage'
+               //sh './gradlew assemble'

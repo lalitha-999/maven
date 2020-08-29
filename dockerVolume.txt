@@ -1,0 +1,32 @@
+docker run -d --rm --name=master1 --net=replicanet --hostname=master1 \
+  -v $PWD/d0:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root \
+  mysql/mysql-server:5.7 \
+  --server-id=1 \
+  --log-bin='mysql-bin-1.log'
+
+
+
+docker run -ti -v $PWD/d0:/var/lib/mysql -v $PWD/d0:/var/lib/mysql master1 /bin/bash
+
+
+ docker run -i -t -v $PWD/d0:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mypass --name master1 sample bash
+
+
+docker run -d --rm --name=master --net=replicanet --hostname=master \
+  -v $PWD/d0:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mypass \
+  sample \
+  --server-id=1 \
+  --log-bin='mysql-bin-1.log'
+
+docker exec -it slave1 mysql -uroot -pmypass \
+    -e "INSTALL PLUGIN rpl_semi_sync_slave SONAME 'semisync_slave.so';" \
+    -e "SET GLOBAL rpl_semi_sync_slave_enabled = 1;" \
+    -e "SHOW VARIABLES LIKE 'rpl_semi_sync%';"
+
+
+docker exec -it slave1 mysql -uroot -pmypass \
+    -e "CHANGE MASTER TO MASTER_HOST='master', MASTER_USER='repl', \
+      MASTER_PASSWORD='slavepass', MASTER_LOG_FILE='mysql-bin-1.000003';"
+
+  docker exec -it slave1 mysql -uroot -pmypass -e "START SLAVE;"
+

@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+
+    tools {
+     gradle 'gradle6.4.1'
+    }
+    stages {
+        stage('git_checkout') { 
+            steps {
+               git credentialsId: 'MinervaIOT-Key', url: 'ssh://git@192.168.1.11:10022/miverraiot-platform/developer-portal/developerportal.git'
+            }
+        }
+        stage('Build') { 
+            steps {
+                
+               sh "chmod +x gradlew"
+               sh 'gradle build -x test' 
+            }
+        }
+    }
+}
+
+
+
+
+tools {
+  maven 'Maven'
+}
+
+
+
+pipeline {
+    agent any
+
+    tools {
+     maven 'Maven'
+    }
+    stages {
+        stage('git_checkout') { 
+            steps {
+               git credentialsId: 'MinervaIOT-Key', url: 'ssh://git@192.168.1.11:10022/miverraiot-platform/developer-portal/developerportal.git'
+            }
+        }
+        stage('Build') { 
+            steps {
+               sh 'mvn clean package' 
+            }
+        }
+    }
+}
+
+
+
+
+
+pipeline {
+    agent any
+    tools {
+        gradle "GRADLE_LATEST"
+    }
+    stages {
+        stage('Gradle') {
+            steps {
+                sh 'gradle --version'
+                bat 'gradlew.bat clean build'
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+./gradlew bootWar
+
+
+
+
+java -Dserver.port=7777 -jar demo-0.0.1-SNAPSHOT.jar
+java -jar demo-0.0.1-SNAPSHOT.jar –server.port=9001
+
+java -jar demo-0.0.1-SNAPSHOT.jar --server.port=8090
+
+
+jvm -Dserver.port=8090
+
+
+
+
+java -jar spring-5.jar --server.port=8083
+
+
+DemoApplication
+
+
+
+http://13.127.209.114:8/DemoApplication
+
+
+java -Dthin.dryrun=true -jar demo-0.0.1-SNAPSHOT.jar
+
+
+java -Dspring.application.json='{"server.port":7788}' -jar /root/sampleSB/build/libs/demo-0.0.1-SNAPSHOT.jar
+

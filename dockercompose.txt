@@ -1,0 +1,192 @@
+docker exec -it 3c03529b43f6 mysql -uroot -prootpassword \
+  -e "INSTALL PLUGIN rpl_semi_sync_master SONAME 'semisync_master.so';" \
+  -e "SET GLOBAL rpl_semi_sync_master_enabled = 1;" \
+  -e "SET GLOBAL rpl_semi_sync_master_wait_for_slave_count = 2;" \
+  -e "SHOW VARIABLES LIKE 'rpl_semi_sync%';"
+
+
+docker exec -it 3c03529b43f6 mysql -uroot -prootpassword \
+  -e "CREATE USER 'repl'@'%' IDENTIFIED BY 'slavepass';" \
+  -e "GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';" \
+  -e "SHOW MASTER STATUS;"
+
+
+docker run -d --rm --name=slave3 --hostname=slave3 mysql:latest
+
+
+version: '3.5'
+
+services:
+  mysql-master:
+    image: mysql/mysql-server:8.0
+    container_name: master
+    hostname: master
+    ports:
+      - "3307:3306"
+    restart: unless-stopped
+    volumes:
+      - mysql_db_data_container:/var/lib/mysql
+    environment:
+      - MYSQL_REPLICATION_MODE=master
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_USER=my_user
+      - MYSQL_DATABASE=my_database
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=mypass
+    command: ["mysqld",
+      "--server-id=1",
+      "--log-bin=mysql-bin-1.log"]
+    healthcheck:
+      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
+      interval: 2s
+      retries: 20
+
+  mysql-slave:
+    image: mysql/mysql-server:8.0
+    container_name: slave
+    hostname: slave
+    ports:
+      - "3308:3306"
+    restart: unless-stopped
+    depends_on:
+      - mysql-master
+    environment:
+      - MYSQL_REPLICATION_MODE=slave
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_USER=my_user
+      - MYSQL_DATABASE=my_database
+      - MYSQL_MASTER_HOST=mysql-master
+      - MYSQL_MASTER_PORT_NUMBER=3306
+      - MYSQL_MASTER_ROOT_PASSWORD=mypass
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+    command: ["mysqld",
+      "--server-id=2",
+      "--log-bin=mysql-bin-1.log"]
+    healthcheck:
+      test: "mysqladmin ping -u root -p$${MYSQL_ROOT_PASSWORD}"
+      interval: 2s
+      retries: 20
+volumes:
+  mysql_db_data_container:
+    driver: local
+
+docker exec -it master mysql -uroot -pmypass \
+  -e "CREATE USER 'repl_user'@'%' IDENTIFIED BY 'slavepass';" \
+  -e "GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';" \
+  -e "SHOW MASTER STATUS;"
+
+docker exec downloads_mysql-master_1 sh -c 'mysql -u root -pmypass -e "SHOW MASTER STATUS \G"'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+version: '3.7'
+services:
+  mysql_db_container:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_db_data_container:/var/lib/mysql
+
+volumes:
+  mysql_db_data_container:
+
+
+docker-compose exec node2 mysql -uroot -pmypass \
+  -e "change master to master_user='repl' for channel 'group_replication_recovery';" \
+  -e "START GROUP_REPLICATION;"
+
+
+
+
+docker exec -it master1 mysql -uroot -pmypass \
+  -e "SET @@GLOBAL.group_replication_bootstrap_group=1;" \
+  -e "create user 'repl'@'%';" \
+  -e "GRANT REPLICATION SLAVE ON *.* TO repl@'%';" \
+  -e "flush privileges;" \
+  -e "change master to master_user='root' for channel 'group_replication_recovery';" \
+  -e "START GROUP_REPLICATION;" \
+  -e "SET @@GLOBAL.group_replication_bootstrap_group=0;" \
+  -e "SELECT * FROM performance_schema.replication_group_members;"
+
+
+
+
+
+
+
+[client]
+user=root
+pass=mypass
+
+
+
+
+[client] 
+socket=/var/lib/mysql/mysql.sock
+
+
+
+
+
+docker exec -it slave$N mysql -uroot -pmypass \
+    -e "INSTALL PLUGIN rpl_semi_sync_slave SONAME 'semisync_slave.so';" \
+    -e "SET GLOBAL rpl_semi_sync_slave_enabled = 1;" \
+    -e "SHOW VARIABLES LIKE 'rpl_semi_sync%';"
+
+
+
+docker-compose exec node2 mysql -uroot -pmypass \
+  -e "change master to master_user='repl' for channel 'group_replication_recovery';" \
+  -e "START GROUP_REPLICATION;"
+
+
+
+docker-compose exec node2 mysql -uroot -pmypass \
+  -e "SHOW VARIABLES WHERE Variable_name = 'hostname';" \
+  -e "SELECT * FROM performance_schema.replication_group_members;"
+
+
+docker-compose exec node$N mysql -uroot -pmypass \
+  -e "SHOW VARIABLES WHERE Variable_name = 'hostname';" \
+  -e "SELECT * FROM performance_schema.replication_group_members;"
+

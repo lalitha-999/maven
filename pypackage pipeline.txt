@@ -1,0 +1,41 @@
+node{
+ //try {
+ //notifyBuild('STARTED')
+
+stage("Source-Code-Checkout"){
+
+    //enable remote triggers
+   //script {
+      //  properties([pipelineTriggers([pollSCM('* * * * *')])])
+       //properties([pipelineTriggers([gitlabPush()])])
+    //}
+
+     //git credentialsId: 'zkindia_rd28jenkins_gitlab_PrivateKey', url: 'ssh://git@192.168.1.11:10022/python/easy-timepro-web/easy-timepro-web/source_code.git'
+   checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'DisableRemotePoll']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'zkindia_rd28jenkins_gitlab_PrivateKey', url: 'ssh://git@192.168.1.11:10022/python/easy-timepro-web/easy-timepro-web/source_code.git']]])
+       gitlabCommitStatus {
+
+    }
+
+}
+     //checkout([$class: 'GitSCM', branches: [[name: '*/master'], [name: '*/8.1.x']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'zkindia_rd28jenkins_gitlab_PrivateKey', url: 'ssh://git@192.168.1.11:10022/python/easy-timepro-web/easy-timepro-web/source_code.git']]])
+
+ stage("Source-Code-Checkout"){
+     
+    sh" sudo /usr/bin/easy_install virtualenv ~/projetos/virtualenvs/blog"
+    
+    sh "source ~/projetos/virtualenvs/blog/bin/activate"
+    
+    sh "pip install setuptools --upgrade"
+    
+    sh "pip install -r requirements.txt"
+     
+     sh "python manage.py makemigrations"
+     
+     sh "python manage.py migrate"
+     
+     sh "python manage.py compilemessages"
+     
+     sh "python manage.py run-cab.cmd"
+     
+ }
+}
